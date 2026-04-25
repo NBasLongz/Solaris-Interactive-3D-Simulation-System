@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>🌌 3D Solar System — Computer Graphics Project</title>
+  <meta name="description" content="Interactive 3D Solar System simulation with Three.js — Computer Graphics CS105 Project"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+<!-- ══ LEFT PANEL ══ -->
+<div id="lp">
+  <div class="ph">
+    <h1 style="font-size:13px;font-weight:800;letter-spacing:1.5px;color:#fff;text-transform:uppercase;margin:0">🌌 3D Solar System</h1>
+    <p><span class="live"></span>COMPUTER GRAPHICS PROJECT · THREE.JS</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" data-t="obj">Objects</div>
+    <div class="tab" data-t="cam">Camera</div>
+    <div class="tab" data-t="xf">Transform</div>
+    <div class="tab" data-t="lit">Lighting</div>
+  </div>
+
+  <!-- ═══ TAB: OBJECTS ═══ -->
+  <div class="tc on" id="tc-obj">
+    <div class="sec">
+      <div class="slabel">File Loading</div>
+      <label>Load Texture Image for Selected Object</label>
+      <input type="file" id="texUpload" accept="image/*" title="Choose image for texture">
+      <label>Load 3D Model (.glb / .gltf)</label>
+      <input type="file" id="modelUpload" accept=".glb,.gltf" title="Open 3D model file">
+    </div>
+
+    <div class="sec">
+      <div class="slabel">Planet List</div>
+      <div class="plist" id="plist"></div>
+    </div>
+
+    <div class="sec">
+      <div class="slabel">Floating Objects & 3D Models</div>
+      <div id="demoBadgesContainer"></div>
+    </div>
+
+    <div class="sec">
+      <div class="slabel">Display Options</div>
+      <div class="cr"><input type="checkbox" id="chkOrbit" checked><label for="chkOrbit">Orbit Lines</label></div>
+      <div class="cr"><input type="checkbox" id="chkLabel" checked><label for="chkLabel">Object Labels</label></div>
+      <div class="cr"><input type="checkbox" id="chkDemo" checked><label for="chkDemo">Show Floating Objects</label></div>
+      <div class="cr"><input type="checkbox" id="chkWire"><label for="chkWire">Wireframe Mode</label></div>
+      <div class="cr"><input type="checkbox" id="chkTexture" checked><label for="chkTexture">Show Textures</label></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: CAMERA ═══ -->
+  <div class="tc" id="tc-cam">
+    <div class="sec">
+      <div class="slabel">Perspective Projection</div>
+      <div class="rl"><label>FOV (Field of View)</label><span class="v" id="vFov">60°</span></div>
+      <input type="range" id="sFov" min="20" max="120" value="60">
+      <div class="rl"><label>Near Plane</label><span class="v" id="vNear">0.10</span></div>
+      <input type="range" id="sNear" min="0.01" max="10" step="0.01" value="0.1">
+      <div class="rl"><label>Far Plane</label><span class="v" id="vFar">5000</span></div>
+      <input type="range" id="sFar" min="200" max="15000" step="100" value="8000">
+    </div>
+    <div class="sec">
+      <div class="slabel">Camera Presets</div>
+      <div class="bg">
+        <div class="btn" onclick="camPreset('top')">⬆ Top</div>
+        <div class="btn" onclick="camPreset('side')">➡ Side</div>
+        <div class="btn" onclick="camPreset('iso')">🎯 ISO</div>
+        <div class="btn pr" onclick="camPreset('def')">🎥 Default</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="slabel">Camera Position</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:2.2;color:var(--txt);">
+        X: <span id="cx">0</span><br>
+        Y: <span id="cy">0</span><br>
+        Z: <span id="cz">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: AFFINE TRANSFORM ═══ -->
+  <div class="tc" id="tc-xf">
+    <div class="sec">
+      <div class="slabel">Selected Object</div>
+      <div style="padding:10px;background:rgba(61,143,255,.07);border-radius:8px;border:1px solid var(--brd);">
+        <div id="xfName" style="font-size:13px;color:var(--acc);font-weight:700;">None selected</div>
+        <div style="font-size:9.5px;color:var(--mut);margin-top:2px;font-family:'JetBrains Mono',monospace">Click on a planet or shape to select</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="slabel">Translation (Translate)</div>
+      <div class="rl"><label>ΔX (Horizontal)</label><span class="v" id="vtx">0.0</span></div>
+      <input type="range" id="stx" min="-150" max="150" value="0" step="0.5">
+      <div class="rl"><label>ΔY (Vertical)</label><span class="v" id="vty">0.0</span></div>
+      <input type="range" id="sty" min="-150" max="150" value="0" step="0.5">
+      <div class="rl"><label>ΔZ (Depth)</label><span class="v" id="vtz">0.0</span></div>
+      <input type="range" id="stz" min="-150" max="150" value="0" step="0.5">
+    </div>
+    <div class="sec">
+      <div class="slabel">Rotation (Rotate)</div>
+      <div class="rl"><label>Rotate X-Axis</label><span class="v" id="vrx">0°</span></div>
+      <input type="range" id="srx" min="-180" max="180" value="0">
+      <div class="rl"><label>Rotate Y-Axis</label><span class="v" id="vry">0°</span></div>
+      <input type="range" id="sry" min="-180" max="180" value="0">
+      <div class="rl"><label>Rotate Z-Axis</label><span class="v" id="vrz">0°</span></div>
+      <input type="range" id="srz" min="-180" max="180" value="0">
+    </div>
+    <div class="sec">
+      <div class="slabel">Scaling (Scale)</div>
+      <div class="rl"><label>Uniform Scale</label><span class="v" id="vsc">1.00×</span></div>
+      <input type="range" id="ssc" min="0.1" max="6" step="0.05" value="1">
+    </div>
+    <div class="sec">
+      <div class="bg">
+        <div class="btn" onclick="xfReset()">↺ Reset Transform</div>
+        <div class="btn pr" onclick="xfAuto()">▶ Auto Spin</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: LIGHTING ═══ -->
+  <div class="tc" id="tc-lit">
+    <div class="sec">
+      <div class="slabel">Ambient Light</div>
+      <div class="cr"><input type="checkbox" id="chkAmb" checked><label for="chkAmb">Enabled</label></div>
+      <div class="rl"><label>Intensity</label><span class="v" id="vAmb">0.60</span></div>
+      <input type="range" id="sAmb" min="0" max="3" step="0.01" value="0.6">
+    </div>
+    <div class="sec">
+      <div class="slabel">Point Light (Sun)</div>
+      <div class="cr"><input type="checkbox" id="chkSun" checked><label for="chkSun">Enabled</label></div>
+      <div class="rl"><label>Intensity</label><span class="v" id="vSun">5.0</span></div>
+      <input type="range" id="sSun" min="0" max="15" step="0.1" value="5.0">
+      <div class="cr"><input type="checkbox" id="chkSunSh" checked><label for="chkSunSh">Shadow Mapping</label></div>
+    </div>
+    <div class="sec">
+      <div class="slabel">Directional Light</div>
+      <div class="cr"><input type="checkbox" id="chkDir" checked><label for="chkDir">Enabled</label></div>
+      <div class="rl"><label>Intensity</label><span class="v" id="vDir">0.35</span></div>
+      <input type="range" id="sDir" min="0" max="3" step="0.05" value="0.35">
+      <div class="rl"><label>Position X</label><span class="v" id="vDx">1.0</span></div>
+      <input type="range" id="sDx" min="-5" max="5" step="0.1" value="1">
+    </div>
+  </div>
+</div>
+
+<!-- ══ HUD ══ -->
+<div id="hud">
+  <div class="title">🌌 3D Solar System</div>
+  <div class="fps" id="fps">FPS: -- | Objects: --</div>
+</div>
+
+<!-- ══ TOOLTIP ══ -->
+<div id="tip"></div>
+
+<!-- ══ RIGHT PANEL (Detail Info) ══ -->
+<div id="rp">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <span style="font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;font-family:'JetBrains Mono',monospace">Details</span>
+    <span style="cursor:pointer;color:var(--mut);font-size:17px;" onclick="rpClose()">✕</span>
+  </div>
+  <div style="text-align:center;padding:16px 0 14px;border-bottom:1px solid var(--brd);margin-bottom:14px;">
+    <div id="rpVis" style="width:72px;height:72px;border-radius:50%;margin:0 auto 11px;box-shadow:0 0 32px rgba(100,180,255,.3);"></div>
+    <div class="rph" id="rpName">—</div>
+    <div class="rpst" id="rpType">—</div>
+  </div>
+  <div class="ig" id="rpGrid"></div>
+  <div class="rp-desc" id="rpDesc" style="display:none;"></div>
+  <div id="rpMoons" style="margin-top:12px;"></div>
+  <div class="bg" style="margin-top:16px;">
+    <div class="btn pr" onclick="rpFocus()">🎯 Focus Camera</div>
+    <div class="btn" onclick="setTab('xf')">🔧 Transform</div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM BAR ══ -->
+<div id="bb">
+  <button id="playBtn" title="Space = Play/Pause">⏸</button>
+  <span class="bb">Orbit Speed:</span>
+  <input type="range" id="spd" min="0" max="6" step="0.05" value="1">
+  <span class="bb bbv" id="spdV">1.00×</span>
+  <div style="flex:1"></div>
+  <span class="bb">Viewing: <span class="bbv" id="focus">Solar System</span></span>
+</div>
+
+<!-- ══ ENTRY POINT: ES Module ══ -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

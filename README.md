@@ -7,7 +7,7 @@
 Looking at the simulation in action (Click to play):
 
 <p align="center">
-  <video src="https://github.com/NBasLongz/Solaris-Interactive-3D-Simulation-System/raw/main/Source/assets/models/video.mp4" width="100%" controls></video>
+  <video src="https://github.com/NBasLongz/Solaris-Interactive-3D-Simulation-System/blob/main/Source/assets/models/video.mp4" width="100%" controls></video>
 </p>
 
 ---
